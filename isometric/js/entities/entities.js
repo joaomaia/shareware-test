@@ -25,43 +25,76 @@ game.PlayerEntity = me.Entity.extend({
         me.input.bindKey(me.input.KEY.UP,    "up");
         me.input.bindKey(me.input.KEY.DOWN,  "down");
 
-        // the main player spritesheet
-        var texture =  new me.video.renderer.Texture(
-            { framewidth: 32, frameheight: 32 },
-            me.loader.getImage("Blank_Sprite_Sheet_4_2_by_KnightYamato")
-        );
-
         // create a new animationSheet object
-        this.renderable = texture.createAnimationFromName([0, 1, 2, 3, 4, 5, 6, 7, 8]);
-        // define an additional basic walking animation
-        this.renderable.addAnimation ("simple_walk", [0,1,2]);
+        this.renderable = new me.AnimationSheet(0, 0, {
+            image : "player",
+            framewidth : 32,
+            frameheight : 64,
+            anchorPoint : new me.Vector2d(0.5, 0.5)
+        });
+
+        // define basic walking animation
+        this.renderable.addAnimation ("idle", [10]);
+        this.renderable.addAnimation ("walk_left", [24,25,26,27,28,29,30,31]);
+        this.renderable.addAnimation ("walk_right", [16,17,18,19,20,21,22,23]);
+        this.renderable.addAnimation ("walk_up", [0,1,2,3,4]);
+        this.renderable.addAnimation ("walk_down", [8,9,10,11,12]);
+        this.renderable.setCurrentAnimation("idle");
     },
 
     /* -----
 
-        update the player pos
+        update the player pos and animations
 
     ------            */
     update : function (dt) {
 
+        var left = right = up = down = false;
+
         if (me.input.isKeyPressed("left")) {
             // update the entity velocity
             this.body.vel.x -= this.body.accel.x * me.timer.tick;
+            right = false;
+            left = true;
         } else if (me.input.isKeyPressed("right")) {
             // update the entity velocity
             this.body.vel.x += this.body.accel.x * me.timer.tick;
+            left = false;
+            right = true;
         } else {
             this.body.vel.x = 0;
+            right = false;
+            left = false;
         }
         if (me.input.isKeyPressed("up")) {
             // update the entity velocity
             this.body.vel.y -= this.body.accel.y * me.timer.tick;
+            down = false;
+            up = true;
         } else if (me.input.isKeyPressed("down")) {
             // update the entity velocity
             this.body.vel.y += this.body.accel.y * me.timer.tick;
+            up = false;
+            down = true;
         } else {
             this.body.vel.y = 0;
+            up = false;
+            down = false;
         }
+
+        // change 
+        if(left || right || up || down){
+            if(left || right){
+                if(left && !this.renderable.isCurrentAnimation("walk_left")) this.renderable.setCurrentAnimation("walk_left");
+                if(right && !this.renderable.isCurrentAnimation("walk_right")) this.renderable.setCurrentAnimation("walk_right");    
+            } else {
+                if(up && !this.renderable.isCurrentAnimation("walk_up"))  this.renderable.setCurrentAnimation("walk_up");
+            if(down && !this.renderable.isCurrentAnimation("walk_down")) this.renderable.setCurrentAnimation("walk_down");
+            }
+        } else{
+            this.renderable.setCurrentAnimation("idle");
+        }
+        
 
         // apply physics to the body (this moves the entity)
         this.body.update(dt);
