@@ -30,7 +30,7 @@ game.PlayerEntity = me.Entity.extend({
             image : "player",
             framewidth : 32,
             frameheight : 64,
-            anchorPoint : new me.Vector2d(0.5, 0.5)
+            anchorPoint : new me.Vector2d(0.5, 1)
         });
 
         // define basic walking animation
@@ -82,11 +82,11 @@ game.PlayerEntity = me.Entity.extend({
             down = false;
         }
 
-        // change 
+        // change
         if(left || right || up || down){
             if(left || right){
                 if(left && !this.renderable.isCurrentAnimation("walk_left")) this.renderable.setCurrentAnimation("walk_left");
-                if(right && !this.renderable.isCurrentAnimation("walk_right")) this.renderable.setCurrentAnimation("walk_right");    
+                if(right && !this.renderable.isCurrentAnimation("walk_right")) this.renderable.setCurrentAnimation("walk_right");
             } else {
                 if(up && !this.renderable.isCurrentAnimation("walk_up"))  this.renderable.setCurrentAnimation("walk_up");
             if(down && !this.renderable.isCurrentAnimation("walk_down")) this.renderable.setCurrentAnimation("walk_down");
@@ -94,7 +94,7 @@ game.PlayerEntity = me.Entity.extend({
         } else{
             this.renderable.setCurrentAnimation("idle");
         }
-        
+
 
         // apply physics to the body (this moves the entity)
         this.body.update(dt);
