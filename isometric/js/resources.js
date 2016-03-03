@@ -6,6 +6,7 @@ game.resources = [
      */
     { name: "forest",  type:"image", src: "data/img/forest.png" },
     { name: "player", type:"image", src: "data/img/player.png" },
+    { name: "enemy", type:"image", src: "data/img/enemy.png" },
 
     /* Maps.
      * @example

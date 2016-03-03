@@ -49,6 +49,7 @@ var game = {
 
         // register our objects entity in the object pool
         me.pool.register("mainPlayer", game.PlayerEntity);
+        me.pool.register("Enemy", game.EnemyEntity);
 
         // switch to PLAY state
         me.state.change(me.state.PLAY);
