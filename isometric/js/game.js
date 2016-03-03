@@ -25,6 +25,9 @@ var game = {
             });
         }
 
+        // load pathfinding plugin
+        me.plugin.register.defer(this, me.pathfinding.EasyStar, "easystar");
+
         // set all ressources to be loaded
         me.loader.onload = this.loaded.bind(this);
 
@@ -50,6 +53,30 @@ var game = {
         // register our objects entity in the object pool
         me.pool.register("mainPlayer", game.PlayerEntity);
         me.pool.register("Enemy", game.EnemyEntity);
+
+        // create and setup static collision mesh
+        // TODO update grid if collision mesh changes (change level, new objects, etc)
+
+        var collisionObjects = me.levelDirector.getCurrentLevel().getObjects(true).filter(function(o){
+            return o.type == 'solid';
+        });
+        var grid = [];
+        for (var y = 0; y < me.levelDirector.getCurrentLevel().rows; y++) {
+            grid.push([]);
+            for (var x = 0; x < me.levelDirector.getCurrentLevel().cols; x++) {
+                for (var o = 0; o < collisionObjects.length; o++) {
+                    var test = new me.Renderable(x * me.levelDirector.getCurrentLevel().tilewidth, y * me.levelDirector.getCurrentLevel().tileheight, me.levelDirector.getCurrentLevel().tilewidth, me.levelDirector.getCurrentLevel().tileheight);
+                    if(test.overlaps(collisionObjects[o])){
+                        //console.log('collision at: ' + x*me.levelDirector.getCurrentLevel().tilewidth + ' , ' + y*me.levelDirector.getCurrentLevel().tileheight);
+                        grid[y][x] = 1;
+                    } else{
+                        grid[y][x] = 0;
+                    }
+                }
+            }
+        }
+        me.plugins.easystar.setGrid(grid);
+        me.plugins.easystar.setAcceptableTiles([0]);
 
         // switch to PLAY state
         me.state.change(me.state.PLAY);

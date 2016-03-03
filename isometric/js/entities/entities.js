@@ -134,6 +134,16 @@ game.EnemyEntity = me.Entity.extend({
         // call the constructor
         this._super(me.Entity, "init", [x, y , settings]);
 
+        // update even when offscreen
+        this.alwaysUpdate = true;
+
+        // target and path
+        this.target = null;
+        this.path = [],
+        this.dest = null,
+        this.lastPos = {x: -1, y: -1},
+        this.pathAge = 0,
+
         // disable gravity
         this.body.gravity = 0;
 
@@ -162,24 +172,96 @@ game.EnemyEntity = me.Entity.extend({
 
     /* -----
 
+        return chessboard distance to target
+
+    ------ */
+
+    chessboard : function() {
+        // 
+        return Math.max( Math.round(Math.abs(this.pos.x/me.levelDirector.getCurrentLevel().tilewidth - this.target.pos.x/me.levelDirector.getCurrentLevel().tilewidth)), Math.round(Math.abs(this.pos.y/me.levelDirector.getCurrentLevel().tileheight - this.target.pos.y/me.levelDirector.getCurrentLevel().tileheight)));
+    },
+
+    /* -----
+
         update the enemy pos and animations
 
     ------            */
     update : function (dt) {
 
+        var now = Date.now();
+
+        if (this.target == null) {
+            // we should globally store this value
+            this.target = me.game.world.getChildByName('mainPlayer')[0];
+        }
 
         // TODO calculate these
         var left = right = up = down = false;
 
         if (this.alive) {
 
+            if (this.path.length < 1 || (this.chessboard() >= 1 && this.pathAge+5000 < now)) {
+                // not moving anywhere
+                // friction takes over
+                if (this.target != null) {
+                    me.plugins.easystar.findPath(
+                        Math.round(this.pos.x/me.levelDirector.getCurrentLevel().tilewidth), // start x
+                        Math.round(this.pos.y/me.levelDirector.getCurrentLevel().tileheight), // start y
+                        Math.round(this.target.pos.x/me.levelDirector.getCurrentLevel().tilewidth), // goal x
+                        Math.round(this.target.pos.y/this.pos.x/me.levelDirector.getCurrentLevel().tileheight), // goal y
+                        (function(path){
+                            if (path === null) {
+                                this.path = [];
+                            } else {
+                                this.path = path.map(function(obj){
+                                    obj.x = obj.x * me.levelDirector.getCurrentLevel().tilewidth;
+                                    obj.y = obj.y * me.levelDirector.getCurrentLevel().tileheight;
+                                    return obj;
+                                });
+                                this.dest = this.path.pop();
+                                this.pathAge = now;
+                            }
+                        }).bind(this));
+                    me.plugins.easystar.calculate();
+                }
+            } else {
+                if (this.chessboard() < 1) {
+                    // just go for it
+                    this.dest = this.target.pos;
+                    this.pathAge = now-5000;
+                } else if (this.body.getShape(0).containsPoint(this.dest.x, this.dest.y) && this.path.length > 0) {
+                    // TODO - do this with non constant, add some fuzz factor
+                    //console.log("Reached "+this.dest.x+","+this.dest.y);
+                    this.dest = this.path.pop();
 
-            /**
+                }
+                if (this.dest != null) {
+                    
+                    //console.log("@",this.pos.x,this.pos.y);
+                    //console.log("Moving toward ",this.dest.x,this.dest.y);
 
-            NEEDS PATHFINDING LOCIC
+                    // move based on next position
 
-            **/
-            
+                    var xdiff = this.dest.x - this.pos.x;
+                    var ydiff = this.dest.y - this.pos.y;
+
+                    if (xdiff < 0) {
+                        this.body.vel.x -= this.body.accel.x * me.timer.tick;
+                        this.lastPos.x = this.left;
+                    } else if (xdiff > 0) {
+                        this.body.vel.x += this.body.accel.x * me.timer.tick;
+                        this.lastPos.x = this.left;
+                    }
+                
+                    if (ydiff < 0) {
+                        this.body.vel.y += this.body.accel.y * me.timer.tick;
+                        this.lastPos.y = this.body.getShape(0).getBounds().pos.y;
+                    } else if (ydiff > 0) {
+                        this.body.vel.y -= this.body.accel.y * me.timer.tick;
+                        this.lastPos.y = this.body.getShape(0).getBounds().pos.y;
+                    }
+                }
+            }
         } else {
             this.body.vel.x = 0;
             this.renderable.setCurrentAnimation("dead")
@@ -216,5 +298,31 @@ game.EnemyEntity = me.Entity.extend({
     onCollision : function (/*response, other*/) {
         // Make all other objects solid
         return true;
+    },
+
+    draw: function(context) {
+        // draw the sprite if defined
+            if (this.renderable) {
+                // translate the renderable position (relative to the entity)
+                // and keeps it in the entity defined bounds
+                // anyway to optimize this ?
+                var x = ~~(this.pos.x + (this.anchorPoint.x * (this.width - this.renderable.width)));
+                var y = ~~(this.pos.y + (this.anchorPoint.y * (this.height - this.renderable.height)));
+                context.translate(x, y);
+                this.renderable.draw(context);
+                context.translate(-x, -y);
+            }
+        // draw dest rect
+        debugAStar = true;
+        if (debugAStar && this.dest) {
+            if (this.dest && this.dest.rect) {
+                this.dest.rect.draw(context, "green");
+            }   
+            for (var i = 0, ii = this.path.length; i < ii; i+=1) {
+                if (this.path[i] && this.path[i].rect) {
+                    this.path[i].rect.draw(context, "red");
+                }
+            }
+        }
     }
 });
