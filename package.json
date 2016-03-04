@@ -1,0 +1,22 @@
+{
+  "name": "shareware-test",
+  "version": "0.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joaomaia/shareware-test.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joaomaia/shareware-test/issues"
+  },
+  "homepage": "https://github.com/joaomaia/shareware-test",
+  "devDependencies": {
+    "express": "^4.13.4"
+  }
+}

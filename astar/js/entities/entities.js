@@ -48,33 +48,44 @@ game.PlayerEntity = me.Entity.extend({
         
         //Check the path
         if(this.path) {
-        
-          //Next destination
-          if(!this.next) {
-            console.log(this.path);
-            this.next = this.path.shift();
-            this.next.x *= 32;
-            this.next.y *= 32;
-            
-            console.log(this.next);
-            console.log(this.pos);
-          }
-     
-          var distx = this.next.x - this.pos.x;
-          var disty = this.next.y - this.pos.y;
 
-          if(Math.abs(distx) < 1 && Math.abs(disty) < 1) {
-            this.next = this.path.shift();
-            this.next.x *= 32;
-            this.next.y *= 32;
-            distx = this.next.x - this.pos.x;
-            disty = this.next.y - this.pos.x;
+          // Got places to go
+          if(this.path.length > 0){
+          
+            //Next destination
+            if(!this.next) {
+              console.log(this.path);
+              this.next = this.path.shift();
+              this.next.x *= 32;
+              this.next.y *= 32;
+              
+              console.log(this.next);
+              console.log(this.pos);
+            }
+       
+            var distx = this.next.x - this.pos.x;
+            var disty = this.next.y - this.pos.y;
+
+            if(Math.abs(distx) < 1 && Math.abs(disty) < 1) {
+              this.next = this.path.shift();
+              this.next.x *= 32;
+              this.next.y *= 32;
+              distx = this.next.x - this.pos.x;
+              disty = this.next.y - this.pos.x;
+            }
+            
+            var dist = 0.2 * Math.sqrt((distx*distx) + (disty*disty));
+            
+            this.body.vel.x = distx/dist;
+            this.body.vel.y = disty/dist;
+
+          } else {
+            // Stop
+
+            this.body.vel.x = 0;
+            this.body.vel.y = 0;
+
           }
-          
-          var dist = 0.2 * Math.sqrt((distx*distx) + (disty*disty));
-          
-          this.body.vel.x = distx/dist;
-          this.body.vel.y = disty/dist;
 
         }
         
