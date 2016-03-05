@@ -1,0 +1,53 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+	<meta charset="UTF-8" />
+	<title>Phaser - Shareware</title>
+	<script type="text/javascript" src="js/phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+var game = new Phaser.Game(960, 640, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+function preload() {
+
+    game.load.tilemap('map', 'imgs/map/map.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.image('tiles', 'imgs/map/area01_level_tiles.png');
+
+}
+
+function create() {
+
+    game.stage.backgroundColor = '#787878';
+
+    //  The 'mario' key here is the Loader key given in game.load.tilemap
+    map = game.add.tilemap('map');
+
+    //  The first parameter is the tileset name, as specified in the Tiled map editor (and in the tilemap json file)
+    //  The second parameter maps this name to the Phaser.Cache key 'tiles'
+    map.addTilesetImage('area01_level_tiles', 'tiles');
+    
+    //  Creates a layer from the World1 layer in the map data.
+    //  A Layer is effectively like a Phaser.Sprite, so is added to the display list.
+    layer = map.createLayer('World');
+
+    //  This resizes the game world to match the layer dimensions
+    layer.resizeWorld();
+
+}
+
+function update() {
+
+}
+
+</script>
+
+</body>
+</html>
